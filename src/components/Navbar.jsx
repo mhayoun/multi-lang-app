@@ -25,24 +25,23 @@ const Navbar = ({ logic, uiText }) => {
               <div className="absolute top-full left-0 w-full h-2 bg-transparent" />
 
               {/* Dropdown Menu */}
-              <div className="absolute left-0 top-full mt-1 hidden group-hover:flex flex-col bg-white shadow-xl border border-slate-100 rounded-xl p-1.5 min-w-[200px] animate-in fade-in zoom-in-95 duration-150 z-[60]">
-                {menu.subItems.length > 0 ? (
-                  menu.subItems.map((sub) => (
+                <div className="absolute left-0 top-full mt-1 hidden group-hover:flex flex-col bg-white shadow-xl border border-slate-100 rounded-xl p-1.5 min-w-[200px] animate-in fade-in zoom-in-95 duration-150 z-[60]">
+                  {menu.subItems.map((sub) => (
                     <button
                       key={sub.id}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleSubItemClick(sub);
                       }}
-                      className="w-full text-left px-4 py-2.5 hover:bg-blue-50 hover:text-blue-700 rounded-lg text-sm font-medium transition-all"
+                      /* CHANGE: 'text-left' -> 'text-start'
+                         This respects the dir="rtl" or dir="ltr" on the parent
+                      */
+                      className="w-full text-start px-4 py-2.5 hover:bg-blue-50 hover:text-blue-700 rounded-lg text-sm font-medium transition-all"
                     >
                       {logic.t(sub.title)}
                     </button>
-                  ))
-                ) : (
-                  <span className="px-4 py-2 text-xs text-slate-400 italic">No items</span>
-                )}
-              </div>
+                  ))}
+                </div>
             </div>
           ))}
         </div>
