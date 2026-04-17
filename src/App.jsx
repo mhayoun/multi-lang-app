@@ -73,11 +73,54 @@ const App = () => {
   );
 };
 
-
-
 const AdminInterface = ({ menuData, setMenuData }) => {
 
-  const autoTranslate = (text) => `[EN] ${text}`; // Simulated translation logic
+  // Helper to convert File to Base64 String
+  const handleFileUpload = (e, menuId, subId, type) => {
+    const files = Array.from(e.target.files);
+
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result;
+
+        setMenuData(prev => prev.map(m => {
+          if (m.id === menuId) {
+            return {
+              ...m,
+              subItems: m.subItems.map(s => {
+                if (s.id === subId) {
+                  return { ...s, [type]: [...(s[type] || []), base64String] };
+                }
+                return s;
+              })
+            };
+          }
+          return m;
+        }));
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeFile = (menuId, subId, type, index) => {
+    setMenuData(prev => prev.map(m => {
+      if (m.id === menuId) {
+        return {
+          ...m,
+          subItems: m.subItems.map(s => {
+            if (s.id === subId) {
+              const newList = [...s[type]];
+              newList.splice(index, 1);
+              return { ...s, [type]: newList };
+            }
+            return s;
+          })
+        };
+      }
+      return m;
+    }));
+  };
 
   const addMenu = () => {
     const newItem = {
@@ -94,8 +137,8 @@ const AdminInterface = ({ menuData, setMenuData }) => {
       id: Date.now(),
       title: { he: '', en: '' },
       content: { he: '', en: '' },
-      images: [], // Multiple images
-      pdfs: []   // Multiple PDFs
+      images: [],
+      pdfs: []
     };
     setMenuData(menuData.map(m => m.id === menuId ? { ...m, subItems: [...m.subItems, newSub] } : m));
   };
@@ -103,7 +146,7 @@ const AdminInterface = ({ menuData, setMenuData }) => {
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
       <div className="flex justify-between items-center border-b pb-4">
-        <h2 className="text-2xl font-bold">ניהול תוכן (Hebrew/English)</h2>
+        <h2 className="text-2xl font-bold text-slate-800">ניהול תוכן (Hebrew/English)</h2>
         <button onClick={addMenu} className="bg-blue-600 text-white px-5 py-2 rounded-xl flex items-center gap-2 hover:bg-blue-700 shadow-lg shadow-blue-200 transition">
           <Plus size={18} /> הוסף תפריט ראשי
         </button>
@@ -112,6 +155,7 @@ const AdminInterface = ({ menuData, setMenuData }) => {
       <div className="grid gap-8">
         {menuData.map(menu => (
           <div key={menu.id} className="bg-white border rounded-2xl overflow-hidden shadow-sm border-slate-200">
+            {/* MAIN MENU SECTION */}
             <div className="p-4 bg-slate-50 border-b flex items-center gap-4">
               <div className="flex-1 space-y-2">
                 <input className="w-full border p-2 rounded text-right" dir="rtl" placeholder="כותרת תפריט בעברית" value={menu.title.he}
@@ -119,40 +163,68 @@ const AdminInterface = ({ menuData, setMenuData }) => {
                 <input className="w-full border p-2 rounded bg-white" placeholder="English Title" value={menu.title.en}
                   onChange={(e) => setMenuData(menuData.map(m => m.id === menu.id ? { ...m, title: { ...m.title, en: e.target.value } } : m))} />
               </div>
-              <button onClick={() => setMenuData(menuData.filter(m => m.id !== menu.id))} className="text-red-500 hover:bg-red-50 p-3 rounded-full"><Trash2 size={20} /></button>
+              <button onClick={() => setMenuData(menuData.filter(m => m.id !== menu.id))} className="text-red-500 hover:bg-red-50 p-3 rounded-full transition-colors"><Trash2 size={20} /></button>
             </div>
 
             <div className="p-6 space-y-6">
+              {/* BG IMAGE LINK */}
               <div className="flex items-center gap-2 border p-2 rounded bg-slate-50">
                 <ImageIcon size={18} className="text-slate-400" />
                 <input className="flex-1 bg-transparent outline-none text-sm" placeholder="Main Background Image URL" value={menu.bgImage}
                   onChange={(e) => setMenuData(menuData.map(m => m.id === menu.id ? { ...m, bgImage: e.target.value } : m))} />
               </div>
 
+              {/* SUB ITEMS SECTION */}
               <div className="mr-6 space-y-4 border-r-4 border-blue-50 pr-6">
                 {menu.subItems.map(sub => (
-                  <div key={sub.id} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                  <div key={sub.id} className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-6">
                     <div className="grid grid-cols-2 gap-4">
-                      <input className="border p-2 rounded text-right" dir="rtl" placeholder="כותרת משנה" value={sub.title.he}
+                      <input className="border p-2 rounded text-right" dir="rtl" placeholder="כותרת משנה (Hebrew)" value={sub.title.he}
                         onChange={(e) => setMenuData(menuData.map(m => m.id === menu.id ? { ...m, subItems: m.subItems.map(s => s.id === sub.id ? { ...s, title: { ...s.title, he: e.target.value } } : s) } : m))} />
-                      <input className="border p-2 rounded" placeholder="Submenu Title (En)" value={sub.title.en}
+                      <input className="border p-2 rounded" placeholder="Sub-item Title (English)" value={sub.title.en}
                         onChange={(e) => setMenuData(menuData.map(m => m.id === menu.id ? { ...m, subItems: m.subItems.map(s => s.id === sub.id ? { ...s, title: { ...s.title, en: e.target.value } } : s) } : m))} />
                     </div>
 
                     <textarea className="w-full border p-2 rounded h-24 text-right" dir="rtl" placeholder="תוכן בעברית..." value={sub.content.he}
                       onChange={(e) => setMenuData(menuData.map(m => m.id === menu.id ? { ...m, subItems: m.subItems.map(s => s.id === sub.id ? { ...s, content: { ...s.content, he: e.target.value } } : s) } : m))} />
 
-                    {/* Multiple Assets inputs (comma separated for demo) */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                         <label className="text-[10px] font-bold text-slate-400 uppercase">Image URLs (Comma separated)</label>
-                         <input className="w-full border p-2 rounded text-xs" placeholder="img1.jpg, img2.jpg" value={sub.images.join(', ')}
-                           onChange={(e) => setMenuData(menuData.map(m => m.id === menu.id ? { ...m, subItems: m.subItems.map(s => s.id === sub.id ? { ...s, images: e.target.value.split(',').map(str => str.trim()) } : s) } : m))} />
+                    {/* IMAGE UPLOADER */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                        <ImageIcon size={16} className="text-blue-500" /> העלאת תמונות (Images)
+                      </label>
+                      <input
+                        type="file" multiple accept="image/*"
+                        onChange={(e) => handleFileUpload(e, menu.id, sub.id, 'images')}
+                        className="text-xs block w-full text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                      />
+                      <div className="flex gap-2 flex-wrap mt-2">
+                        {sub.images?.map((img, i) => (
+                          <div key={i} className="relative w-16 h-16 group">
+                            <img src={img} className="w-full h-full object-cover rounded-lg border shadow-sm" />
+                            <button onClick={() => removeFile(menu.id, sub.id, 'images', i)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={12} /></button>
+                          </div>
+                        ))}
                       </div>
-                      <div className="space-y-1">
-                         <label className="text-[10px] font-bold text-slate-400 uppercase">PDF URLs (Comma separated)</label>
-                         <input className="w-full border p-2 rounded text-xs" placeholder="file1.pdf, file2.pdf" value={sub.pdfs.join(', ')}
-                           onChange={(e) => setMenuData(menuData.map(m => m.id === menu.id ? { ...m, subItems: m.subItems.map(s => s.id === sub.id ? { ...s, pdfs: e.target.value.split(',').map(str => str.trim()) } : s) } : m))} />
+                    </div>
+
+                    {/* PDF UPLOADER */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                        <FileText size={16} className="text-red-500" /> העלאת קבצי PDF
+                      </label>
+                      <input
+                        type="file" multiple accept=".pdf"
+                        onChange={(e) => handleFileUpload(e, menu.id, sub.id, 'pdfs')}
+                        className="text-xs block w-full text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100"
+                      />
+                      <div className="space-y-1 mt-2">
+                        {sub.pdfs?.map((pdf, i) => (
+                          <div key={i} className="flex items-center justify-between bg-white p-2 rounded border text-xs shadow-sm">
+                            <span className="truncate max-w-[200px] font-medium">Document {i + 1}.pdf</span>
+                            <button onClick={() => removeFile(menu.id, sub.id, 'pdfs', i)} className="text-red-500 hover:text-red-700 p-1"><Trash2 size={14} /></button>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </div>
@@ -168,6 +240,7 @@ const AdminInterface = ({ menuData, setMenuData }) => {
     </div>
   );
 };
+
 
 const UserInterface = ({ menuData, activeSubItem, setActiveSubItem, lang, t, languages }) => {
   if (activeSubItem) {
