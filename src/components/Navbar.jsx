@@ -3,6 +3,13 @@ import { Settings, User } from 'lucide-react';
 import { LANGUAGES } from '../data';
 
 const Navbar = ({ logic, uiText }) => {
+
+  // New: Function to reset state and go home
+  const handleHomeClick = () => {
+    logic.setActiveSubItem(null); // Closes any open sub-item page
+    logic.setView('user');        // Switches from Admin to User view
+  };
+
   const handleSubItemClick = (sub) => {
     logic.setActiveSubItem(sub);
     logic.setView('user');
@@ -11,37 +18,43 @@ const Navbar = ({ logic, uiText }) => {
   return (
     <nav className="bg-white border-b border-slate-200 sticky top-0 z-50 px-6 py-3 flex justify-between items-center shadow-sm">
       <div className="flex items-center gap-6">
-        <h1 className="font-bold text-xl tracking-tight text-blue-600">DynamicPort</h1>
+
+        {/* --- LOGO / HOME BUTTON --- */}
+        <button
+          onClick={handleHomeClick}
+          className="flex items-center transition-transform active:scale-95 outline-none"
+          title={logic.lang === 'he' ? 'דף הבית' : 'Home'}
+        >
+          {logic.logo ? (
+            <img src={logic.logo} alt="Logo" className="h-10 w-auto object-contain" />
+          ) : (
+            <h1 className="font-bold text-xl tracking-tight text-blue-600">DynamicPort</h1>
+          )}
+        </button>
 
         <div className="hidden md:flex gap-4 border-slate-200 h-6 items-center px-4 border-x">
           {logic.menuData.map((menu) => (
             <div key={menu.id} className="relative group h-full flex items-center">
-              {/* Trigger */}
               <button className="font-medium hover:text-blue-600 transition-colors py-2">
                 {logic.t(menu.title)}
               </button>
 
-              {/* Invisible Bridge to prevent menu closing on hover move */}
               <div className="absolute top-full left-0 w-full h-2 bg-transparent" />
 
-              {/* Dropdown Menu */}
-                <div className="absolute left-0 top-full mt-1 hidden group-hover:flex flex-col bg-white shadow-xl border border-slate-100 rounded-xl p-1.5 min-w-[200px] animate-in fade-in zoom-in-95 duration-150 z-[60]">
-                  {menu.subItems.map((sub) => (
-                    <button
-                      key={sub.id}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleSubItemClick(sub);
-                      }}
-                      /* CHANGE: 'text-left' -> 'text-start'
-                         This respects the dir="rtl" or dir="ltr" on the parent
-                      */
-                      className="w-full text-start px-4 py-2.5 hover:bg-blue-50 hover:text-blue-700 rounded-lg text-sm font-medium transition-all"
-                    >
-                      {logic.t(sub.title)}
-                    </button>
-                  ))}
-                </div>
+              <div className="absolute ltr:left-0 rtl:right-0 top-full mt-1 hidden group-hover:flex flex-col bg-white shadow-xl border border-slate-100 rounded-xl p-1.5 min-w-[200px] animate-in fade-in zoom-in-95 duration-150 z-[60]">
+                {menu.subItems.map((sub) => (
+                  <button
+                    key={sub.id}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSubItemClick(sub);
+                    }}
+                    className="w-full text-start px-4 py-2.5 hover:bg-blue-50 hover:text-blue-700 rounded-lg text-sm font-medium transition-all"
+                  >
+                    {logic.t(sub.title)}
+                  </button>
+                ))}
+              </div>
             </div>
           ))}
         </div>
