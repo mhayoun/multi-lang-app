@@ -47,6 +47,17 @@ export const useMenuManager = () => {
     setMenuData(prev => prev.filter(m => m.id !== menuId));
   };
 
+  const moveMenu = (fromIndex, toIndex) => {
+    // Prevent moving out of bounds
+    if (toIndex < 0 || toIndex >= menuData.length) return;
+
+    const updatedData = [...menuData];
+    const [movedItem] = updatedData.splice(fromIndex, 1);
+    updatedData.splice(toIndex, 0, movedItem);
+
+    setMenuData(updatedData);
+  };
+
   // --- FILE HANDLING ---
   const handleFileUpload = (e, menuId, subId, type) => {
     const files = Array.from(e.target.files);
@@ -99,6 +110,7 @@ export const useMenuManager = () => {
     // Data & Logic
     menuData,
     setMenuData,
+    moveMenu,
     logo,
     setLogo,
 

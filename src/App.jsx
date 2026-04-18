@@ -15,7 +15,7 @@ const App = () => {
 
       <main className="max-w-7xl mx-auto p-6">
         {logic.view === 'admin' ? (
-          <AdminInterface logic={logic} />
+          <AdminInterface logic={logic} currentLang={logic.lang}/>
         ) : (
           <UserInterface logic={logic} uiText={uiText} />
         )}
