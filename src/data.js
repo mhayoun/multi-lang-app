@@ -32,6 +32,16 @@ export const createNewSubMenu = () => ({
   pdfs: []
 });
 
+export const createNewNews = () => ({
+  id: Date.now(),
+  title: { he: '', en: '' },
+  image: '',
+  // This news item acts as a single SubMenu item (content, images, pdfs)
+  content: { he: '', en: '' },
+  images: [],
+  pdfs: []
+});
+
 export const DEFAULT_MENU = [
   {
     id: 1,
