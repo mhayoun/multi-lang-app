@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { createNewMenu, createNewSubMenu } from './data';
 
 export const useMenuManager = () => {
-  // --- STATE ---
+  // --- STATE INITIALIZATION ---
   const [menuData, setMenuData] = useState(() => {
     const saved = localStorage.getItem('siteData');
     return saved ? JSON.parse(saved) : [];
@@ -34,12 +34,12 @@ export const useMenuManager = () => {
 
   // --- MENU ACTIONS ---
   const addMenu = () => {
-    setMenuData([...menuData, createNewMenu()]);
+    setMenuData(prev => [...prev, createNewMenu()]);
   };
 
   const addSubMenu = (menuId) => {
     setMenuData(prev => prev.map(m =>
-      m.id === menuId ? { ...m, subItems: [...m.subItems, createNewSubMenu()] } : m
+      m.id === menuId ? { ...m, subItems: [...(m.subItems || []), createNewSubMenu()] } : m
     ));
   };
 
@@ -48,13 +48,10 @@ export const useMenuManager = () => {
   };
 
   const moveMenu = (fromIndex, toIndex) => {
-    // Prevent moving out of bounds
     if (toIndex < 0 || toIndex >= menuData.length) return;
-
     const updatedData = [...menuData];
     const [movedItem] = updatedData.splice(fromIndex, 1);
     updatedData.splice(toIndex, 0, movedItem);
-
     setMenuData(updatedData);
   };
 
@@ -68,19 +65,30 @@ export const useMenuManager = () => {
         const base64String = reader.result;
 
         setMenuData(prev => prev.map(m => {
-          if (m.id === menuId) {
-            // Update main menu background (if no subId provided)
-            if (!subId && type === 'bgImage') return { ...m, bgImage: base64String };
+          if (m.id !== menuId) return m;
 
-            // Update specific sub-item files
-            return {
-              ...m,
-              subItems: m.subItems.map(s =>
-                s.id === subId ? { ...s, [type]: [...(s[type] || []), base64String] } : s
-              )
-            };
+          // Case 1: Update main menu background image
+          if (!subId && type === 'bgImage') {
+            return { ...m, bgImage: base64String };
           }
-          return m;
+
+          // Case 2: Update specific sub-item files (Images or PDFs)
+          return {
+            ...m,
+            subItems: m.subItems.map(s => {
+              if (s.id !== subId) return s;
+
+              // If uploading a PDF, save as object with filename. Otherwise, just the string.
+              const fileEntry = type === 'pdfs'
+                ? { url: base64String, name: file.name }
+                : base64String;
+
+              return {
+                ...s,
+                [type]: [...(s[type] || []), fileEntry]
+              };
+            })
+          };
         }));
       };
       reader.readAsDataURL(file);
@@ -89,20 +97,16 @@ export const useMenuManager = () => {
 
   const removeFile = (menuId, subId, type, index) => {
     setMenuData(prev => prev.map(m => {
-      if (m.id === menuId) {
-        return {
-          ...m,
-          subItems: m.subItems.map(s => {
-            if (s.id === subId) {
-              const newList = [...(s[type] || [])];
-              newList.splice(index, 1);
-              return { ...s, [type]: newList };
-            }
-            return s;
-          })
-        };
-      }
-      return m;
+      if (m.id !== menuId) return m;
+      return {
+        ...m,
+        subItems: m.subItems.map(s => {
+          if (s.id !== subId) return s;
+          const newList = [...(s[type] || [])];
+          newList.splice(index, 1);
+          return { ...s, [type]: newList };
+        })
+      };
     }));
   };
 

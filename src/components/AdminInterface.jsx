@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import {
-  Plus, Trash2, Image as ImageIcon, FileText,
-  Upload, ExternalLink, ChevronDown, ChevronUp,
+  Plus, Trash2, Image as ImageIcon,
+  Upload, ChevronDown, ChevronUp,
   ArrowUp, ArrowDown
 } from 'lucide-react';
+import SubMenuEditor from './SubMenuEditor';
 
 const AdminInterface = ({ logic, currentLang = 'he' }) => {
   const {
@@ -16,7 +17,7 @@ const AdminInterface = ({ logic, currentLang = 'he' }) => {
     removeMenu,
     logo,
     setLogo,
-    moveMenu
+    moveMenu = () => {} // Default empty function to prevent crash
   } = logic;
 
   const [openMenus, setOpenMenus] = useState({});
@@ -88,25 +89,15 @@ const AdminInterface = ({ logic, currentLang = 'he' }) => {
 
               {/* ACCORDION HEADER */}
               <div className="p-4 bg-slate-50 border-b flex items-center gap-3">
-                {/* Reorder Buttons */}
                 <div className="flex flex-col gap-1">
-                  <button
-                    disabled={index === 0}
-                    onClick={() => moveMenu(index, index - 1)}
-                    className="p-1 hover:bg-white rounded border disabled:opacity-30 text-slate-500"
-                  >
+                  <button disabled={index === 0} onClick={() => moveMenu(index, index - 1)} className="p-1 hover:bg-white rounded border disabled:opacity-30 text-slate-500">
                     <ArrowUp size={14} />
                   </button>
-                  <button
-                    disabled={index === menuData.length - 1}
-                    onClick={() => moveMenu(index, index + 1)}
-                    className="p-1 hover:bg-white rounded border disabled:opacity-30 text-slate-500"
-                  >
+                  <button disabled={index === menuData.length - 1} onClick={() => moveMenu(index, index + 1)} className="p-1 hover:bg-white rounded border disabled:opacity-30 text-slate-500">
                     <ArrowDown size={14} />
                   </button>
                 </div>
 
-                {/* Title Inputs */}
                 <div className="flex-1 grid grid-cols-2 gap-2">
                   <input
                     className={`border-none bg-transparent font-bold focus:ring-0 ${isHe ? 'text-right' : 'text-left order-2'}`}
@@ -124,10 +115,7 @@ const AdminInterface = ({ logic, currentLang = 'he' }) => {
                   <button onClick={() => removeMenu(menu.id)} className="text-red-400 hover:text-red-600 p-2">
                     <Trash2 size={18} />
                   </button>
-                  <button
-                    onClick={() => toggleAccordion(menu.id)}
-                    className="p-2 hover:bg-slate-200 rounded-full transition-colors"
-                  >
+                  <button onClick={() => toggleAccordion(menu.id)} className="p-2 hover:bg-slate-200 rounded-full transition-colors">
                     {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                   </button>
                 </div>
@@ -135,17 +123,17 @@ const AdminInterface = ({ logic, currentLang = 'he' }) => {
 
               {/* ACCORDION CONTENT */}
               {isOpen && (
-                <div className="p-6 space-y-6 animate-in slide-in-from-top-2 duration-200">
-                  {/* Background Upload Section */}
+                <div className="p-6 space-y-6">
+                  {/* Background Section */}
                   <div className={`flex flex-col md:flex-row items-center gap-4 border p-4 rounded-xl bg-slate-50 ${!isHe && 'md:flex-row-reverse'}`}>
                     <div className="flex flex-1 items-center gap-2 w-full">
                       <ImageIcon size={18} className="text-slate-400" />
-                      <input className="flex-1 bg-white border border-slate-200 p-2 rounded text-sm outline-none" placeholder="Background Image URL..." value={menu.bgImage || ''}
+                      <input className="flex-1 bg-white border border-slate-200 p-2 rounded text-sm outline-none" placeholder="Background URL..." value={menu.bgImage || ''}
                         onChange={(e) => setMenuData(menuData.map(m => m.id === menu.id ? { ...m, bgImage: e.target.value } : m))} />
                     </div>
                     <div className="flex items-center gap-3">
                       {menu.bgImage && <img src={menu.bgImage} className="w-10 h-10 object-cover rounded border bg-white" alt="bg" />}
-                      <label className="cursor-pointer bg-white border border-slate-300 text-slate-600 px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-slate-100 shadow-sm">
+                      <label className="cursor-pointer bg-white border border-slate-300 text-slate-600 px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-slate-100">
                         <Upload size={14} /> <span>{isHe ? 'העלאת רקע' : 'Upload BG'}</span>
                         <input type="file" accept="image/*" onChange={(e) => onBgImageChange(e, menu.id)} className="hidden" />
                       </label>
@@ -155,50 +143,19 @@ const AdminInterface = ({ logic, currentLang = 'he' }) => {
                   {/* Sub-items Section */}
                   <div className={`space-y-4 ${isHe ? 'border-r-4 pr-6' : 'border-l-4 pl-6'} border-blue-100`}>
                     <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider">
-                      {isHe ? 'תת-תפריטים' : 'Sub-Items'}
+                      {isHe ? 'תת-פריטים' : 'Sub-Items'}
                     </h4>
                     {menu.subItems.map(sub => (
-                      <div key={sub.id} className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <input className={`border p-2 rounded text-right ${isHe ? 'order-1' : 'order-2'}`} dir="rtl" value={sub.title.he} placeholder="כותרת משנה"
-                            onChange={(e) => setMenuData(menuData.map(m => m.id === menu.id ? { ...m, subItems: m.subItems.map(s => s.id === sub.id ? { ...s, title: { ...s.title, he: e.target.value } } : s) } : m))} />
-                          <input className={`border p-2 rounded text-left ${isHe ? 'order-2' : 'order-1'}`} dir="ltr" value={sub.title.en} placeholder="Sub-title"
-                            onChange={(e) => setMenuData(menuData.map(m => m.id === menu.id ? { ...m, subItems: m.subItems.map(s => s.id === sub.id ? { ...s, title: { ...s.title, en: e.target.value } } : s) } : m))} />
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <textarea className={`w-full border p-2 rounded h-20 text-right ${isHe ? 'order-1' : 'order-2'}`} dir="rtl" placeholder="תוכן..." value={sub.content.he}
-                            onChange={(e) => setMenuData(menuData.map(m => m.id === menu.id ? { ...m, subItems: m.subItems.map(s => s.id === sub.id ? { ...s, content: { ...s.content, he: e.target.value } } : s) } : m))} />
-                          <textarea className={`w-full border p-2 rounded h-20 text-left ${isHe ? 'order-2' : 'order-1'}`} dir="ltr" placeholder="Content..." value={sub.content.en}
-                            onChange={(e) => setMenuData(menuData.map(m => m.id === menu.id ? { ...m, subItems: m.subItems.map(s => s.id === sub.id ? { ...s, content: { ...s.content, en: e.target.value } } : s) } : m))} />
-                        </div>
-
-                        {/* File Upload Previews */}
-                        <div className="grid grid-cols-2 gap-4 pt-2 border-t border-slate-200">
-                          <div>
-                            <input type="file" multiple accept="image/*" onChange={(e) => handleFileUpload(e, menu.id, sub.id, 'images')} className="text-xs w-full mb-2" />
-                            <div className="flex gap-2 flex-wrap">
-                              {sub.images?.map((img, i) => (
-                                <div key={i} className="relative w-12 h-12 group">
-                                  <img src={img} className="w-full h-full object-cover rounded border" alt="pre" />
-                                  <button onClick={() => removeFile(menu.id, sub.id, 'images', i)} className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition"><Trash2 size={10}/></button>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                          <div>
-                            <input type="file" multiple accept=".pdf" onChange={(e) => handleFileUpload(e, menu.id, sub.id, 'pdfs')} className="text-xs w-full mb-2" />
-                            <div className="space-y-1">
-                              {sub.pdfs?.map((pdf, i) => (
-                                <div key={i} className="flex items-center justify-between bg-white border rounded p-1 text-[10px]">
-                                  <span className="truncate w-20">{isHe ? 'מסמך' : 'PDF'} {i+1}</span>
-                                  <button onClick={() => removeFile(menu.id, sub.id, 'pdfs', i)} className="text-red-500"><Trash2 size={12}/></button>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                      <SubMenuEditor
+                        key={sub.id}
+                        sub={sub}
+                        menuId={menu.id}
+                        isHe={isHe}
+                        handleFileUpload={handleFileUpload}
+                        removeFile={removeFile}
+                        setMenuData={setMenuData}
+                        menuData={menuData}
+                      />
                     ))}
                     <button onClick={() => addSubMenu(menu.id)} className="text-blue-600 text-xs font-bold flex items-center gap-1 hover:underline">
                       + {isHe ? 'הוסף תת-פריט' : 'Add Sub-item'}
