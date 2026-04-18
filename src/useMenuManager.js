@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { createNewMenu, createNewSubMenu } from './data';
+import { createNewMenu, createNewSubMenu, DEFAULT_MENU } from './data';
 
 export const useMenuManager = () => {
   // --- STATE INITIALIZATION ---
   const [menuData, setMenuData] = useState(() => {
     const saved = localStorage.getItem('siteData');
-    return saved ? JSON.parse(saved) : [];
+    // If no data exists, initialize with the Youth Home DEFAULT_MENU
+    return saved ? JSON.parse(saved) : DEFAULT_MENU;
   });
 
   const [logo, setLogo] = useState(() => {
@@ -33,6 +34,14 @@ export const useMenuManager = () => {
   const t = (obj) => obj?.[lang] || obj?.['he'] || '';
 
   // --- MENU ACTIONS ---
+
+  // New: Restore the default Youth Home menu structure
+  const uploadDefaults = () => {
+    if (window.confirm("Restore default Youth Home menu structure?")) {
+      setMenuData(DEFAULT_MENU);
+    }
+  };
+
   const addMenu = () => {
     setMenuData(prev => [...prev, createNewMenu()]);
   };
@@ -75,10 +84,9 @@ export const useMenuManager = () => {
           // Case 2: Update specific sub-item files (Images or PDFs)
           return {
             ...m,
-            subItems: m.subItems.map(s => {
+            subItems: (m.subItems || []).map(s => {
               if (s.id !== subId) return s;
 
-              // If uploading a PDF, save as object with filename. Otherwise, just the string.
               const fileEntry = type === 'pdfs'
                 ? { url: base64String, name: file.name }
                 : base64String;
@@ -100,7 +108,7 @@ export const useMenuManager = () => {
       if (m.id !== menuId) return m;
       return {
         ...m,
-        subItems: m.subItems.map(s => {
+        subItems: (m.subItems || []).map(s => {
           if (s.id !== subId) return s;
           const newList = [...(s[type] || [])];
           newList.splice(index, 1);
@@ -117,6 +125,7 @@ export const useMenuManager = () => {
     moveMenu,
     logo,
     setLogo,
+    uploadDefaults,
 
     // UI State
     view,
