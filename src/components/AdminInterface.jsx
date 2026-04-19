@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   Plus, Trash2, Image as ImageIcon,
   Upload, ChevronDown, ChevronUp,
-  ArrowUp, ArrowDown, LayoutGrid, Newspaper
+  ArrowUp, ArrowDown, LayoutGrid, Newspaper, Link as LinkIcon, X
 } from 'lucide-react';
 import SubMenuEditor from './SubMenuEditor';
 
@@ -14,10 +14,11 @@ const AdminInterface = ({ logic, currentLang = 'he' }) => {
     addMenu, addSubMenu, removeMenu,
     addNews, removeNews,
     logo, setLogo,
-    moveMenu = () => {}
+    moveMenu = () => {},
+    t
   } = logic;
 
-  const [activeTab, setActiveTab] = useState('menu'); // 'menu' or 'news'
+  const [activeTab, setActiveTab] = useState('menu');
   const [openItems, setOpenItems] = useState({});
   const isHe = currentLang === 'he';
 
@@ -40,17 +41,6 @@ const AdminInterface = ({ logic, currentLang = 'he' }) => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setMenuData(menuData.map(m => m.id === menuId ? { ...m, bgImage: reader.result } : m));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const onNewsImageChange = (e, newsId) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setNewsData(newsData.map(n => n.id === newsId ? { ...n, image: reader.result } : n));
       };
       reader.readAsDataURL(file);
     }
@@ -88,7 +78,7 @@ const AdminInterface = ({ logic, currentLang = 'he' }) => {
           className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold transition-all ${activeTab === 'menu' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
         >
           <LayoutGrid size={18} />
-          {isHe ? 'ניהול תפריטים' : 'Menu Management'}
+          {isHe ? 'ניהול תפריט' : 'Menu Management'}
         </button>
         <button
           onClick={() => setActiveTab('news')}
@@ -102,7 +92,7 @@ const AdminInterface = ({ logic, currentLang = 'he' }) => {
       {activeTab === 'menu' ? (
         <>
           <div className="flex justify-between items-center border-b pb-4">
-            <h2 className="text-2xl font-bold text-slate-800">{isHe ? 'ניהול תפריטים' : 'Menu Management'}</h2>
+            <h2 className="text-2xl font-bold text-slate-800">{isHe ? 'ניהול תפריט' : 'Menu Management'}</h2>
             <button onClick={addMenu} className="bg-blue-600 text-white px-5 py-2 rounded-xl flex items-center gap-2 hover:bg-blue-700 shadow-lg transition">
               <Plus size={18} /> {isHe ? 'תפריט חדש' : 'New Menu'}
             </button>
@@ -125,12 +115,12 @@ const AdminInterface = ({ logic, currentLang = 'he' }) => {
                     <div className="flex-1 grid grid-cols-2 gap-2">
                       <input
                         className={`border-none bg-transparent font-bold focus:ring-0 ${isHe ? 'text-right' : 'text-left order-2'}`}
-                        dir="rtl" placeholder="כותרת בעברית" value={menu.title.he}
+                        dir="rtl" placeholder="כותרת בעברית" value={menu.title?.he || ''}
                         onChange={(e) => setMenuData(menuData.map(m => m.id === menu.id ? { ...m, title: { ...m.title, he: e.target.value } } : m))}
                       />
                       <input
                         className={`border-none bg-transparent font-bold focus:ring-0 ${isHe ? 'text-left order-2' : 'text-left order-1'}`}
-                        dir="ltr" placeholder="English Title" value={menu.title.en}
+                        dir="ltr" placeholder="English Title" value={menu.title?.en || ''}
                         onChange={(e) => setMenuData(menuData.map(m => m.id === menu.id ? { ...m, title: { ...m.title, en: e.target.value } } : m))}
                       />
                     </div>
@@ -160,12 +150,12 @@ const AdminInterface = ({ logic, currentLang = 'he' }) => {
                         </div>
                       </div>
                       <div className={`space-y-4 ${isHe ? 'border-r-4 pr-6' : 'border-l-4 pl-6'} border-blue-100`}>
-                        <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider">{isHe ? 'תת-תפריטים' : 'Sub-Items'}</h4>
+                        <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider">{isHe ? 'תתי-פריטים' : 'Sub-Items'}</h4>
                         {menu.subItems.map(sub => (
                           <SubMenuEditor key={sub.id} sub={sub} menuId={menu.id} isHe={isHe} handleFileUpload={handleFileUpload} removeFile={removeFile} setMenuData={setMenuData} menuData={menuData} />
                         ))}
                         <button onClick={() => addSubMenu(menu.id)} className="text-blue-600 text-xs font-bold flex items-center gap-1 hover:underline">
-                          + {isHe ? 'הוסף תת-תפריט' : 'Add Sub-item'}
+                          + {isHe ? 'הוסף תת-פריט' : 'Add Sub-item'}
                         </button>
                       </div>
                     </div>
@@ -178,9 +168,9 @@ const AdminInterface = ({ logic, currentLang = 'he' }) => {
       ) : (
         <>
           <div className="flex justify-between items-center border-b pb-4">
-            <h2 className="text-2xl font-bold text-slate-800">{isHe ? 'ניהול חדשות (סליידר)' : 'News Management (Slider)'}</h2>
+            <h2 className="text-2xl font-bold text-slate-800">{isHe ? 'ניהול חדשות' : 'News Management'}</h2>
             <button onClick={addNews} className="bg-blue-600 text-white px-5 py-2 rounded-xl flex items-center gap-2 hover:bg-blue-700 shadow-lg transition">
-              <Plus size={18} /> {isHe ? 'חדשה חדשה' : 'New Slide'}
+              <Plus size={18} /> {isHe ? 'פוסט חדש' : 'New Post'}
             </button>
           </div>
 
@@ -190,16 +180,16 @@ const AdminInterface = ({ logic, currentLang = 'he' }) => {
               return (
                 <div key={news.id} className="bg-white border rounded-2xl overflow-hidden shadow-sm">
                   <div className="p-4 bg-slate-50 border-b flex items-center gap-3">
-                    <ImageIcon className="text-slate-400" size={20} />
+                    <Newspaper className="text-blue-500" size={20} />
                     <div className="flex-1 grid grid-cols-2 gap-2">
                       <input
                         className={`border-none bg-transparent font-bold focus:ring-0 ${isHe ? 'text-right' : 'text-left order-2'}`}
-                        dir="rtl" placeholder="כותרת חדשה" value={news.title.he}
+                        dir="rtl" placeholder="כותרת הפוסט" value={news.title?.he || ''}
                         onChange={(e) => setNewsData(newsData.map(n => n.id === news.id ? { ...n, title: { ...n.title, he: e.target.value } } : n))}
                       />
                       <input
                         className={`border-none bg-transparent font-bold focus:ring-0 ${isHe ? 'text-left order-2' : 'text-left order-1'}`}
-                        dir="ltr" placeholder="News Title" value={news.title.en}
+                        dir="ltr" placeholder="Post Title" value={news.title?.en || ''}
                         onChange={(e) => setNewsData(newsData.map(n => n.id === news.id ? { ...n, title: { ...n.title, en: e.target.value } } : n))}
                       />
                     </div>
@@ -214,32 +204,74 @@ const AdminInterface = ({ logic, currentLang = 'he' }) => {
                   </div>
                   {isOpen && (
                     <div className="p-6 space-y-8">
-                      <div className={`flex flex-col md:flex-row items-center gap-4 border p-4 rounded-xl bg-blue-50/30 ${!isHe && 'md:flex-row-reverse'}`}>
-                        <div className="flex flex-1 items-center gap-2 w-full">
-                          <ImageIcon size={18} className="text-blue-400" />
-                          <input className="flex-1 bg-white border border-blue-100 p-2 rounded text-sm outline-none" placeholder="Slider Image URL..." value={news.image || ''}
-                            onChange={(e) => setNewsData(newsData.map(n => n.id === news.id ? { ...n, image: e.target.value } : n))} />
-                        </div>
-                        <div className="flex items-center gap-3">
-                          {news.image && <img src={news.image} className="w-16 h-10 object-cover rounded border bg-white" alt="news" />}
-                          <label className="cursor-pointer bg-white border border-blue-200 text-blue-600 px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-blue-50">
-                            <Upload size={14} /> <span>{isHe ? 'העלאת תמונה' : 'Upload Image'}</span>
-                            <input type="file" accept="image/*" onChange={(e) => onNewsImageChange(e, news.id)} className="hidden" />
-                          </label>
-                        </div>
+                      {/* --- CONTENT EDITOR (Exact same as Menu) --- */}
+                      <div className="space-y-2">
+                        <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest">{isHe ? 'תוכן הדף' : 'Page Content'}</h4>
+                        <SubMenuEditor
+                          sub={news}
+                          menuId={news.id}
+                          isHe={isHe}
+                          handleFileUpload={(e, tid, sid, type) => handleFileUpload(e, tid, sid, type, true)}
+                          removeFile={(tid, sid, type, idx) => removeFile(tid, sid, type, idx, true)}
+                          setMenuData={setNewsData}
+                          menuData={newsData}
+                        />
                       </div>
 
-                      <div className={`p-4 rounded-xl border-2 border-dashed border-slate-200 ${isHe ? 'border-r-4 pr-6' : 'border-l-4 pl-6'}`}>
-                         <h4 className="text-xs font-bold text-slate-400 uppercase mb-4 tracking-widest">{isHe ? 'תוכן הידיעה המורחב' : 'Expanded News Content'}</h4>
-                         <SubMenuEditor
-                            sub={news}
-                            menuId={news.id}
-                            isHe={isHe}
-                            handleFileUpload={(e, tid, sid, type) => handleFileUpload(e, tid, sid, type, true)}
-                            removeFile={(tid, sid, type, idx) => removeFile(tid, sid, type, idx, true)}
-                            setMenuData={setNewsData}
-                            menuData={newsData}
-                         />
+                      {/* --- SLIDER LINKING (Multi-selection) --- */}
+                      <div className="bg-blue-50 p-5 rounded-2xl border border-blue-100">
+                        <div className="flex items-center gap-2 mb-4 text-blue-800 font-bold">
+                          <LayoutGrid size={18} />
+                          <span>{isHe ? 'הוספת פריטים לסליידר בדף זה' : 'Add Items to Page Slider'}</span>
+                        </div>
+
+                        <select
+                          className="w-full bg-white border border-blue-200 rounded-xl p-3 text-sm outline-none shadow-sm focus:ring-2 focus:ring-blue-400"
+                          value=""
+                          onChange={(e) => {
+                            if (!e.target.value) return;
+                            const selectedId = Number(e.target.value);
+                            setNewsData(newsData.map(n => {
+                              if (n.id === news.id) {
+                                const current = n.linkedItemIds || [];
+                                if (!current.includes(selectedId)) {
+                                  return { ...n, linkedItemIds: [...current, selectedId] };
+                                }
+                              }
+                              return n;
+                            }));
+                          }}
+                        >
+                          <option value="">{isHe ? '-- בחר פריט תפריט להצגה בסליידר --' : '-- Add menu item to slider --'}</option>
+                          {menuData.map(category => (
+                            <optgroup key={category.id} label={t(category.title)}>
+                              {category.subItems.map(sub => (
+                                <option key={sub.id} value={sub.id}>{t(sub.title)}</option>
+                              ))}
+                            </optgroup>
+                          ))}
+                        </select>
+
+                        {/* List of active links in the slider */}
+                        <div className="flex flex-wrap gap-2 mt-4">
+                          {news.linkedItemIds?.map(linkedId => {
+                            let title = "Unknown";
+                            menuData.forEach(cat => cat.subItems.forEach(s => { if(s.id === linkedId) title = t(s.title) }));
+                            return (
+                              <div key={linkedId} className="flex items-center gap-2 bg-white border border-blue-200 text-blue-700 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm">
+                                <span>{title}</span>
+                                <button
+                                  onClick={() => setNewsData(newsData.map(n => n.id === news.id ?
+                                    { ...n, linkedItemIds: n.linkedItemIds.filter(id => id !== linkedId) } : n
+                                  ))}
+                                  className="text-red-400 hover:text-red-600"
+                                >
+                                  <X size={14} />
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
                   )}
