@@ -4,10 +4,9 @@ import { LANGUAGES } from '../data';
 
 const Navbar = ({ logic, uiText }) => {
 
-  // New: Function to reset state and go home
   const handleHomeClick = () => {
-    logic.setActiveSubItem(null); // Closes any open sub-item page
-    logic.setView('user');        // Switches from Admin to User view
+    logic.setActiveSubItem(null);
+    logic.setView('user');
   };
 
   const handleSubItemClick = (sub) => {
@@ -32,34 +31,53 @@ const Navbar = ({ logic, uiText }) => {
           )}
         </button>
 
+        {/* --- NAVIGATION LINKS --- */}
         <div className="hidden md:flex gap-4 border-slate-200 h-6 items-center px-4 border-x">
-          {logic.menuData.map((menu) => (
-            <div key={menu.id} className="relative group h-full flex items-center">
-              <button className="font-medium hover:text-blue-600 transition-colors py-2">
-                {logic.t(menu.title)}
-              </button>
+          {logic.menuData.map((menu) => {
+            const hasSubItems = menu.subItems && menu.subItems.length > 0;
+            const isSingleItem = menu.subItems && menu.subItems.length === 1;
 
-              <div className="absolute top-full left-0 w-full h-2 bg-transparent" />
+            return (
+              <div key={menu.id} className="relative group h-full flex items-center">
+                {/* Logic: If exactly 1 item, main button triggers that item.
+                   Otherwise, it's just a label for the dropdown.
+                */}
+                <button
+                  onClick={() => isSingleItem && handleSubItemClick(menu.subItems[0])}
+                  className={`font-medium transition-colors py-2 ${
+                    isSingleItem ? 'hover:text-blue-600 cursor-pointer' : 'cursor-default'
+                  }`}
+                >
+                  {logic.t(menu.title)}
+                </button>
 
-              <div className="absolute ltr:left-0 rtl:right-0 top-full mt-1 hidden group-hover:flex flex-col bg-white shadow-xl border border-slate-100 rounded-xl p-1.5 min-w-[200px] animate-in fade-in zoom-in-95 duration-150 z-[60]">
-                {menu.subItems.map((sub) => (
-                  <button
-                    key={sub.id}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleSubItemClick(sub);
-                    }}
-                    className="w-full text-start px-4 py-2.5 hover:bg-blue-50 hover:text-blue-700 rounded-lg text-sm font-medium transition-all"
-                  >
-                    {logic.t(sub.title)}
-                  </button>
-                ))}
+                {/* Only show dropdown if there are 2 or more items */}
+                {hasSubItems && !isSingleItem && (
+                  <>
+                    <div className="absolute top-full left-0 w-full h-2 bg-transparent" />
+                    <div className="absolute ltr:left-0 rtl:right-0 top-full mt-1 hidden group-hover:flex flex-col bg-white shadow-xl border border-slate-100 rounded-xl p-1.5 min-w-[200px] animate-in fade-in zoom-in-95 duration-150 z-[60]">
+                      {menu.subItems.map((sub) => (
+                        <button
+                          key={sub.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSubItemClick(sub);
+                          }}
+                          className="w-full text-start px-4 py-2.5 hover:bg-blue-50 hover:text-blue-700 rounded-lg text-sm font-medium transition-all"
+                        >
+                          {logic.t(sub.title)}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
+      {/* --- RIGHT SIDE CONTROLS --- */}
       <div className="flex items-center gap-4">
         <div className="flex bg-slate-100 rounded-lg p-1">
           <button
