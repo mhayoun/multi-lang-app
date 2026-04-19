@@ -1,9 +1,9 @@
 import React from 'react';
-import NewsSection from './NewsSection';
-import MenuSection from './MenuSection';
-import LogoSection from './LogoSection';
-import AdminTabs from './AdminTabs'; // <--- NEW IMPORT
-import { useAdminLogic } from './useAdminLogic';
+import NewsSection from './admin/NewsSection.jsx';
+import MenuSection from './admin/MenuSection.jsx';
+import LogoSection from './admin/LogoSection.jsx';
+import AdminTabs from './admin/AdminTabs.jsx'; // <--- NEW IMPORT
+import { useAdminLogic } from './admin/useAdminLogic.js';
 
 const AdminInterface = ({ logic, currentLang = 'he' }) => {
   const isHe = currentLang === 'he';
