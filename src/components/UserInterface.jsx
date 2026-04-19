@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {FileText, ChevronRight, ChevronLeft} from 'lucide-react';
 import GalleryBanderole from './GalleryBanderole';
 
@@ -6,10 +6,23 @@ const UserInterface = ({logic, uiText}) => {
     const {activeSubItem, setActiveSubItem, menuData, newsData, t, lang} = logic;
     const isHe = lang === 'he';
 
-    // State for the slider inside the specific page
+    // State for the slider inside the detail page
     const [currentLinkedSlide, setCurrentLinkedSlide] = useState(0);
 
-    // Helper to find the actual data for the items you linked in Admin
+    // NEW: State for the main News Slider
+    const [currentNewsIndex, setCurrentNewsIndex] = useState(0);
+
+    // NEW: Auto-slide effect for the news slider
+    useEffect(() => {
+        if (!newsData || newsData.length <= 1 || activeSubItem) return;
+
+        const interval = setInterval(() => {
+            setCurrentNewsIndex((prev) => (prev + 1) % newsData.length);
+        }, 5000); // Switches every 5 seconds
+
+        return () => clearInterval(interval);
+    }, [newsData, activeSubItem]);
+
     const getLinkedItemsData = (ids) => {
         if (!ids || !Array.isArray(ids)) return [];
         const foundItems = [];
@@ -28,7 +41,6 @@ const UserInterface = ({logic, uiText}) => {
 
         return (
             <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4" dir={isHe ? 'rtl' : 'ltr'}>
-                {/* Back Button */}
                 <button
                     onClick={() => {
                         setActiveSubItem(null);
@@ -42,17 +54,14 @@ const UserInterface = ({logic, uiText}) => {
 
                 <h1 className="text-4xl font-black mb-6 text-slate-800">{t(activeSubItem.title)}</h1>
 
-                {/* 2. MAIN CONTENT TEXT */}
                 <p className={`text-xl leading-relaxed text-slate-600 mb-12 ${isHe ? 'border-r-4 pr-6' : 'border-l-4 pl-6'} border-blue-500`}>
                     {t(activeSubItem.content)}
                 </p>
 
-                {/* 2. CALL THE COMPONENT HERE */}
                 <GalleryBanderole images={activeSubItem.images} isHe={isHe}/>
 
-                {/* 4. PDF DOCUMENTS */}
                 {activeSubItem.pdfs?.length > 0 && (
-                    <div className="bg-slate-50 border border-slate-200 p-8 rounded-[2.5rem]">
+                    <div className="bg-slate-50 border border-slate-200 p-8 rounded-[2.5rem] mt-12">
                         <h3 className="font-black text-xl mb-6 flex items-center gap-3 text-slate-800">
                             <FileText className="text-blue-600" size={24}/>
                             {uiText.docsTitle}
@@ -77,13 +86,13 @@ const UserInterface = ({logic, uiText}) => {
                     </div>
                 )}
 
-                {/* 1. LINKED ITEMS BANDEROLE (Horizontal Gallery) */}
+                {/* RESTORED: LINKED ITEMS BANDEROLE (Horizontal Gallery) */}
                 {linkedItems.length > 0 && (
-                    <div className="mb-12">
-                        <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-4 px-2">
+                    <div className="mt-16 mb-20">
+                        <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-6 px-2">
                             {isHe ? 'קישורים קשורים' : 'Related Links'}
                         </h3>
-                        <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar snap-x">
+                        <div className="flex gap-4 overflow-x-auto pb-6 custom-scrollbar snap-x">
                             {linkedItems.map((item) => (
                                 <button
                                     key={item.id}
@@ -102,7 +111,7 @@ const UserInterface = ({logic, uiText}) => {
                                         className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"/>
 
                                     <div className="absolute inset-0 p-6 flex flex-col justify-end text-white">
-                                        <h4 className="font-black text-lg leading-tight drop-shadow-md">
+                                        <h4 className="font-black text-lg leading-tight drop-shadow-md text-right">
                                             {t(item.title)}
                                         </h4>
                                         <div
@@ -116,7 +125,6 @@ const UserInterface = ({logic, uiText}) => {
                         </div>
                     </div>
                 )}
-
             </div>
         );
     }
@@ -124,29 +132,66 @@ const UserInterface = ({logic, uiText}) => {
     // --- HOME VIEW ---
     return (
         <div className="space-y-12" dir={isHe ? 'rtl' : 'ltr'}>
-            {/* 1. STATIC HOME SLIDER */}
+
+            {/* 1. DYNAMIC HOME SLIDER */}
             {newsData && newsData.length > 0 && (
-                <div className="relative w-full h-[400px] rounded-[3rem] overflow-hidden shadow-2xl">
-                    <img
-                        src={newsData[0].image || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c'}
-                        className="w-full h-full object-cover"
-                        alt="news"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"/>
-                    <div className="absolute bottom-0 p-10 text-white w-full">
-            <span
-                className="bg-blue-600 text-[10px] uppercase tracking-widest px-3 py-1 rounded-full font-bold mb-4 inline-block">
-              {isHe ? 'חדשות אחרונות' : 'Latest News'}
-            </span>
-                        <h2 className="text-4xl font-black mb-4">{t(newsData[0].title)}</h2>
-                        <button
-                            onClick={() => setActiveSubItem(newsData[0])}
-                            className="bg-white text-blue-900 px-8 py-3 rounded-2xl font-bold flex items-center gap-2 hover:scale-105 transition-transform"
-                        >
-                            {isHe ? 'קרא עוד' : 'Read More'}
-                            <ChevronRight size={18} className={isHe ? 'rotate-180' : ''}/>
-                        </button>
+                <div className="relative w-full h-[450px] rounded-[3rem] overflow-hidden shadow-2xl group">
+                    {/* Current Slide */}
+                    <div className="relative w-full h-full transition-all duration-700 ease-in-out">
+                        <img
+                            key={newsData[currentNewsIndex].id}
+                            src={newsData[currentNewsIndex].image || (newsData[currentNewsIndex].images && newsData[currentNewsIndex].images[0]) || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c'}
+                            className="w-full h-full object-cover animate-in fade-in zoom-in-95 duration-1000"
+                            alt="news"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"/>
+
+                        <div className="absolute bottom-0 p-10 text-white w-full">
+                            <span
+                                className="bg-blue-600 text-[10px] uppercase tracking-widest px-3 py-1 rounded-full font-bold mb-4 inline-block">
+                                {isHe ? 'חדשות אחרונות' : 'Latest News'}
+                            </span>
+                            <h2 className="text-4xl font-black mb-4 drop-shadow-lg max-w-2xl">
+                                {t(newsData[currentNewsIndex].title)}
+                            </h2>
+                            <button
+                                onClick={() => setActiveSubItem(newsData[currentNewsIndex])}
+                                className="bg-white text-blue-900 px-8 py-3 rounded-2xl font-bold flex items-center gap-2 hover:scale-105 transition-transform"
+                            >
+                                {isHe ? 'קרא עוד' : 'Read More'}
+                                <ChevronRight size={18} className={isHe ? 'rotate-180' : ''}/>
+                            </button>
+                        </div>
                     </div>
+
+                    {/* Navigation Controls (Visible on Hover) */}
+                    {newsData.length > 1 && (
+                        <>
+                            <button
+                                onClick={() => setCurrentNewsIndex((prev) => (prev - 1 + newsData.length) % newsData.length)}
+                                className="absolute top-1/2 -translate-y-1/2 left-6 p-3 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                                <ChevronLeft size={24}/>
+                            </button>
+                            <button
+                                onClick={() => setCurrentNewsIndex((prev) => (prev + 1) % newsData.length)}
+                                className="absolute top-1/2 -translate-y-1/2 right-6 p-3 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                                <ChevronRight size={24}/>
+                            </button>
+
+                            {/* Pagination Dots */}
+                            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+                                {newsData.map((_, i) => (
+                                    <button
+                                        key={i}
+                                        onClick={() => setCurrentNewsIndex(i)}
+                                        className={`h-2 rounded-full transition-all duration-300 ${currentNewsIndex === i ? 'w-8 bg-blue-500' : 'w-2 bg-white/50 hover:bg-white'}`}
+                                    />
+                                ))}
+                            </div>
+                        </>
+                    )}
                 </div>
             )}
 
