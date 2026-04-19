@@ -1,6 +1,6 @@
 import React from 'react';
 import { Plus, Trash2, Newspaper, ChevronDown, ChevronUp, LayoutGrid, X } from 'lucide-react';
-import SubMenuEditor from '../SubMenuEditor.jsx';
+import SubMenuEditor from './SubMenuEditor.jsx';
 
 const NewsSection = ({
   newsData, menuData, isHe, t, openItems, toggleAccordion,

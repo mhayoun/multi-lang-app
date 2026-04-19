@@ -3,7 +3,7 @@ import {
   Plus, Trash2, Upload, ChevronDown, ChevronUp,
   ArrowUp, ArrowDown
 } from 'lucide-react';
-import SubMenuEditor from '../SubMenuEditor.jsx';
+import SubMenuEditor from './SubMenuEditor.jsx';
 
 const MenuSection = ({
   menuData, isHe, openItems, toggleAccordion, moveMenu,
