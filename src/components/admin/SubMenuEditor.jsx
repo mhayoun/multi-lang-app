@@ -9,9 +9,7 @@ const SubMenuEditor = ({
   handleFileUpload,
   removeFile,
   setMenuData,
-  menuData,
-  linkItemToSub,
-  unlinkItemFromSub
+  menuData
 }) => {
   const logic = useSubMenuEditor(sub, menuId, setMenuData, menuData);
 
