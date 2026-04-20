@@ -1,6 +1,7 @@
 import React from 'react';
-import { Plus, Trash2, Newspaper, ChevronDown, ChevronUp, LayoutGrid, X } from 'lucide-react';
+import { Plus, Trash2, Newspaper, ChevronDown, ChevronUp } from 'lucide-react';
 import SubMenuEditor from './SubMenuEditor.jsx';
+import SliderLinker from './SliderLinker.jsx'; // Import the new component
 
 const NewsSection = ({
   newsData, menuData, isHe, t, openItems, toggleAccordion,
@@ -9,13 +10,16 @@ const NewsSection = ({
 }) => {
   return (
     <section className="animate-in fade-in slide-in-from-left-4 duration-300">
+      {/* Section Header */}
       <div className="flex justify-between items-center border-b pb-4 mb-6">
-        <h2 className="text-2xl font-bold text-slate-800">{isHe ? 'ניהול חדשות' : 'News Management'}</h2>
+        <h2 className="text-2xl font-bold text-slate-800">
+          {isHe ? 'ניהול חדשות' : 'News Management'}
+        </h2>
         <button
           onClick={addNews}
           className="bg-blue-600 text-white px-5 py-2 rounded-xl flex items-center gap-2 hover:bg-blue-700 shadow-lg transition"
         >
-          <Plus size={18} /> {isHe ? 'כתבה חדשה' : 'New Post'}
+          <Plus size={18} /> {isHe ? 'פוסט חדש' : 'New Post'}
         </button>
       </div>
 
@@ -24,6 +28,7 @@ const NewsSection = ({
           const isOpen = openItems[news.id];
           return (
             <div key={news.id} className="bg-white border rounded-2xl overflow-hidden shadow-sm hover:border-slate-300 transition-colors">
+
               {/* Accordion Header */}
               <div className="p-4 bg-slate-50 border-b flex items-center gap-3">
                 <Newspaper className="text-blue-500" size={20} />
@@ -56,8 +61,12 @@ const NewsSection = ({
               {/* Accordion Content */}
               {isOpen && (
                 <div className="p-6 space-y-8 animate-in slide-in-from-top-2 duration-200">
+
+                  {/* Page Content / Editor */}
                   <div className="space-y-2">
-                    <h4 className="text-sm font-black text-slate-400 uppercase tracking-widest">{isHe ? 'תוכן הדף' : 'Page Content'}</h4>
+                    <h4 className="text-sm font-black text-slate-400 uppercase tracking-widest">
+                      {isHe ? 'תוכן העמוד' : 'Page Content'}
+                    </h4>
                     <SubMenuEditor
                       sub={news}
                       menuId={news.id}
@@ -69,43 +78,16 @@ const NewsSection = ({
                     />
                   </div>
 
-                  {/* Slider Item Linking */}
-                  <div className="bg-blue-50 p-5 rounded-3xl border border-blue-100">
-                    <div className="flex items-center gap-2 mb-4 text-blue-800 font-bold">
-                      <LayoutGrid size={18} />
-                      <span>{isHe ? 'הוספת פריטים לסליידר בדף זה' : 'Add Items to Page Slider'}</span>
-                    </div>
+                  {/* Shared Slider Linker Component */}
+                  <SliderLinker
+                    isHe={isHe}
+                    menuData={menuData}
+                    linkedItemIds={news.linkedItemIds}
+                    onLink={(itemId) => linkItemToNews(news.id, itemId)}
+                    onUnlink={(itemId) => unlinkItemFromNews(news.id, itemId)}
+                    t={t}
+                  />
 
-                    <select
-                      className="w-full bg-white border border-blue-200 rounded-xl p-3 text-sm outline-none shadow-sm focus:ring-2 focus:ring-blue-400"
-                      value=""
-                      onChange={(e) => linkItemToNews(news.id, Number(e.target.value))}
-                    >
-                      <option value="">{isHe ? '-- בחר פריט תפריט להוספה --' : '-- Add menu item --'}</option>
-                      {menuData.map(category => (
-                        <optgroup key={category.id} label={t(category.title)}>
-                          {category.subItems.map(sub => (
-                            <option key={sub.id} value={sub.id}>{t(sub.title)}</option>
-                          ))}
-                        </optgroup>
-                      ))}
-                    </select>
-
-                    <div className="flex flex-wrap gap-2 mt-4">
-                      {news.linkedItemIds?.map(linkedId => {
-                        let title = "Unknown";
-                        menuData.forEach(cat => cat.subItems.forEach(s => { if(s.id === linkedId) title = t(s.title) }));
-                        return (
-                          <div key={linkedId} className="flex items-center gap-2 bg-white border border-blue-200 text-blue-700 px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm">
-                            <span>{title}</span>
-                            <button onClick={() => unlinkItemFromNews(news.id, linkedId)} className="text-red-400 hover:text-red-600 transition-colors">
-                              <X size={14} />
-                            </button>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
                 </div>
               )}
             </div>
