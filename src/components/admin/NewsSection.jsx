@@ -1,12 +1,16 @@
 import React from 'react';
-import { Plus, Trash2, Newspaper, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  Plus, Trash2, Newspaper, ChevronDown, ChevronUp,
+  ArrowUp, ArrowDown // Added arrows for ordering
+} from 'lucide-react';
 import SubMenuEditor from './SubMenuEditor.jsx';
-import SliderLinker from './SliderLinker.jsx'; // Import the new component
+import SliderLinker from './SliderLinker.jsx';
 
 const NewsSection = ({
   newsData, menuData, isHe, t, openItems, toggleAccordion,
   updateNewsTitle, linkItemToNews, unlinkItemFromNews,
-  removeNews, addNews, handleFileUpload, removeFile, setNewsData
+  removeNews, addNews, handleFileUpload, removeFile,
+  setNewsData, moveNews // Added moveNews prop to support ordering
 }) => {
   return (
     <section className="animate-in fade-in slide-in-from-left-4 duration-300">
@@ -24,14 +28,34 @@ const NewsSection = ({
       </div>
 
       <div className="space-y-4">
-        {newsData.map((news) => {
+        {newsData.map((news, index) => { // Added index for ordering logic
           const isOpen = openItems[news.id];
           return (
             <div key={news.id} className="bg-white border rounded-2xl overflow-hidden shadow-sm hover:border-slate-300 transition-colors">
 
               {/* Accordion Header */}
               <div className="p-4 bg-slate-50 border-b flex items-center gap-3">
-                <Newspaper className="text-blue-500" size={20} />
+
+                {/* --- NEW: Ordering Controls --- */}
+                <div className="flex flex-col gap-1">
+                  <button
+                    disabled={index === 0}
+                    onClick={() => moveNews(index, index - 1)}
+                    className="p-1 hover:bg-white rounded border disabled:opacity-30 text-slate-500 transition-colors"
+                  >
+                    <ArrowUp size={14}/>
+                  </button>
+                  <button
+                    disabled={index === newsData.length - 1}
+                    onClick={() => moveNews(index, index + 1)}
+                    className="p-1 hover:bg-white rounded border disabled:opacity-30 text-slate-500 transition-colors"
+                  >
+                    <ArrowDown size={14}/>
+                  </button>
+                </div>
+                {/* ------------------------------ */}
+
+                <Newspaper className="text-blue-500 shrink-0" size={20} />
                 <div className="flex-1 grid grid-cols-2 gap-2">
                   <input
                     className="border-none bg-transparent font-bold focus:ring-0 text-sm md:text-base"

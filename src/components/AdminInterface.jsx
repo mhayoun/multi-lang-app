@@ -19,7 +19,7 @@ const AdminInterface = ({logic, currentLang = 'he'}) => {
     const {
         menuData, newsData, handleFileUpload, removeFile, addMenu,
         addSubMenu, removeMenu, addNews, removeNews, logo, setLogo,
-        moveMenu, setMenuData, setNewsData, t
+        moveMenu, moveNews, setMenuData, setNewsData, t
     } = logic;
 
     return (
@@ -73,6 +73,7 @@ const AdminInterface = ({logic, currentLang = 'he'}) => {
                         unlinkItemFromNews={unlinkItemFromNews}
                         removeNews={removeNews}
                         addNews={addNews}
+                        moveNews={moveNews}
                         handleFileUpload={handleFileUpload}
                         removeFile={removeFile}
                         setNewsData={setNewsData}
