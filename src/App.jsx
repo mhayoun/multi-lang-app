@@ -1,4 +1,5 @@
 import React from 'react';
+import { DEFAULT_MENU } from './menuData';
 import { useMenuManager } from './useMenuManager';
 import { LANGUAGES } from './data';
 import Navbar from './components/Navbar';

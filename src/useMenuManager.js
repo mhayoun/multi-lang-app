@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { createNewMenu, createNewSubMenu, DEFAULT_MENU, createNewNews } from './data';
+import { DEFAULT_MENU } from './menuData';
+import { createNewMenu, createNewSubMenu, createNewNews } from './data';
 
 export const useMenuManager = () => {
   // --- STATE INITIALIZATION ---
