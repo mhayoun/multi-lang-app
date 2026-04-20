@@ -1,20 +1,25 @@
 import React from 'react';
 import {
   Plus, Trash2, Upload, ChevronDown, ChevronUp,
-  ArrowUp, ArrowDown
+  ArrowUp, ArrowDown, LayoutGrid, X
 } from 'lucide-react';
 import SubMenuEditor from './SubMenuEditor.jsx';
 
 const MenuSection = ({
   menuData, isHe, openItems, toggleAccordion, moveMenu,
   updateMenuTitle, updateMenuBg, addMenu, removeMenu,
-  addSubMenu, handleFileUpload, removeFile, setMenuData
+  addSubMenu, handleFileUpload, removeFile, setMenuData,
+  linkItemToSub, unlinkItemFromSub
 }) => {
+
+  // Helper to handle translations
+  const t = (obj) => isHe ? obj?.he : obj?.en;
+
   return (
     <section className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
       <div className="flex justify-between items-center border-b pb-4 mb-6">
         <h2 className="text-2xl font-bold text-slate-800">
-          {isHe ? 'ניהול תפריט' : 'Menu Management'}
+          {isHe ? 'ניהול תפריטים' : 'Menu Management'}
         </h2>
         <button
           onClick={addMenu}
@@ -51,7 +56,7 @@ const MenuSection = ({
                 dir="rtl"
                 value={menu.title?.he || ''}
                 onChange={(e) => updateMenuTitle(menu.id, 'he', e.target.value)}
-                placeholder="כותרת עברית"
+                placeholder="כותרת תפריט"
               />
               <input
                 className="border-none bg-transparent font-bold focus:ring-0"
@@ -75,6 +80,7 @@ const MenuSection = ({
           {/* Expanded Content */}
           {openItems[menu.id] && (
             <div className="p-6 space-y-6 animate-in slide-in-from-top-2 duration-200">
+
               {/* Background Image Setup */}
               <div className="flex flex-col md:flex-row items-center gap-4 border p-4 rounded-xl bg-slate-50">
                 <input
@@ -92,20 +98,67 @@ const MenuSection = ({
               {/* Sub-items List */}
               <div className={`space-y-4 border-blue-100 ${isHe ? 'border-r-4 pr-6' : 'border-l-4 pl-6'}`}>
                 <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">
-                  {isHe ? 'תתי-קטגוריות' : 'Sub-items'}
+                  {isHe ? 'תת-פריטים' : 'Sub-items'}
                 </h4>
+
                 {menu.subItems.map(sub => (
-                  <SubMenuEditor
-                    key={sub.id}
-                    sub={sub}
-                    menuId={menu.id}
-                    isHe={isHe}
-                    handleFileUpload={handleFileUpload}
-                    removeFile={removeFile}
-                    setMenuData={setMenuData}
-                    menuData={menuData}
-                  />
+                  <div key={sub.id} className="space-y-3">
+                    <SubMenuEditor
+                      sub={sub}
+                      menuId={menu.id}
+                      isHe={isHe}
+                      handleFileUpload={handleFileUpload}
+                      removeFile={removeFile}
+                      setMenuData={setMenuData}
+                      menuData={menuData}
+                    />
+
+                    {/* Slider Item Linking (Now specific to each SubItem) */}
+                    <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 ml-4">
+                      <div className="flex items-center gap-2 mb-3 text-blue-800 font-bold text-xs">
+                        <LayoutGrid size={14} />
+                        <span>{isHe ? 'הוספת פריטים לסליידר עבור דף זה' : 'Link items to this page slider'}</span>
+                      </div>
+
+                      <select
+                        className="w-full bg-white border border-blue-200 rounded-lg p-2 text-xs outline-none shadow-sm focus:ring-2 focus:ring-blue-400"
+                        value=""
+                        onChange={(e) => linkItemToSub(menu.id, sub.id, Number(e.target.value))}
+                      >
+                        <option value="">{isHe ? '-- בחר פריט להוספה --' : '-- Select item to add --'}</option>
+                        {menuData.map(category => (
+                          <optgroup key={category.id} label={t(category.title)}>
+                            {category.subItems.map(s => (
+                              <option key={s.id} value={s.id}>{t(s.title)}</option>
+                            ))}
+                          </optgroup>
+                        ))}
+                      </select>
+
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        {sub.linkedItemIds?.map(linkedId => {
+                          let linkedTitle = "Unknown";
+                          menuData.forEach(cat => cat.subItems.forEach(item => {
+                            if(item.id === linkedId) linkedTitle = t(item.title);
+                          }));
+
+                          return (
+                            <div key={linkedId} className="flex items-center gap-2 bg-white border border-blue-200 text-blue-700 px-2 py-1 rounded-lg text-[10px] font-bold shadow-sm">
+                              <span>{linkedTitle}</span>
+                              <button
+                                onClick={() => unlinkItemFromSub(menu.id, sub.id, linkedId)}
+                                className="text-red-400 hover:text-red-600 transition-colors"
+                              >
+                                <X size={12} />
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
                 ))}
+
                 <button
                   onClick={() => addSubMenu(menu.id)}
                   className="text-blue-600 text-xs font-bold hover:underline flex items-center gap-1"

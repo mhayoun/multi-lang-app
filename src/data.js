@@ -10,17 +10,18 @@ export const createNewSubMenu = () => ({
     title: {he: '', en: ''},
     content: {he: '', en: ''},
     images: [],
-    pdfs: []
+    pdfs: [],
+    linkedItemIds: []
 });
 
 export const createNewNews = () => ({
     id: Date.now(),
     title: {he: '', en: ''},
     image: '',
-    linkedItemIds: [],
     content: { he: '', en: '' },
     images: [],
-    pdfs: []
+    pdfs: [],
+    linkedItemIds: []
 });
 
 export const LANGUAGES = {
