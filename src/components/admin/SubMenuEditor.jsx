@@ -1,5 +1,8 @@
 import React from 'react';
-import { Trash2, FileText, Eye, Code, Maximize2, X, CheckCircle2, GripVertical, Copy, ExternalLink, Check, LayoutGrid } from 'lucide-react';
+import {
+  Trash2, FileText, Eye, Code, Maximize2, X, CheckCircle2,
+  GripVertical, Copy, Check, Video // Added Video Icon
+} from 'lucide-react';
 import { useSubMenuEditor } from './useSubMenuEditor';
 
 const SubMenuEditor = ({
@@ -13,16 +16,13 @@ const SubMenuEditor = ({
 }) => {
   const logic = useSubMenuEditor(sub, menuId, setMenuData, menuData);
 
-  // Helper to get translated titles
-  const t = (titleObj) => isHe ? titleObj?.he : titleObj?.en;
-
   return (
     <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4 text-slate-800 shadow-sm relative">
 
       {/* 1. HEADER */}
       <div className="flex justify-between items-center">
         <span className="text-xs font-bold uppercase text-slate-400 tracking-wider">
-          {isHe ? 'ניהול תפריט' : 'Menu Management'}
+          {isHe ? 'ניהול תוכן' : 'Content Management'}
         </span>
         <button
           onClick={() => logic.setViewMode(logic.viewMode === 'edit' ? 'preview' : 'edit')}
@@ -75,8 +75,9 @@ const SubMenuEditor = ({
         ))}
       </div>
 
-      {/* 4. RESTORED: FILE UPLOADS (IMAGES & PDFS) */}
-      <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200">
+      {/* 4. FILE UPLOADS (IMAGES, PDFS & VIDEOS) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-slate-200">
+
         {/* Images Column */}
         <div className="space-y-2">
           <label className="font-bold text-slate-400 block text-[10px] uppercase">{isHe ? 'תמונות' : 'Images'}</label>
@@ -87,7 +88,7 @@ const SubMenuEditor = ({
                 <img src={img} className="w-full h-full object-cover rounded border shadow-sm" alt="preview" />
                 <button
                   onClick={() => removeFile(menuId, sub.id, 'images', i)}
-                  className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition shadow-sm"
+                  className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition shadow-sm z-10"
                 >
                   <Trash2 size={10}/>
                 </button>
@@ -103,12 +104,34 @@ const SubMenuEditor = ({
           <div className="space-y-1 mt-2">
             {sub.pdfs?.map((pdf, i) => (
               <div key={i} className="flex items-center justify-between bg-white border rounded p-1 text-[10px] shadow-sm">
-                <span className="truncate w-32 flex items-center gap-1">
+                <span className="truncate w-24 flex items-center gap-1">
                   <FileText size={10} className="text-red-500"/>
-                  {pdf.name || (isHe ? 'מסמך' : 'Document')}
+                  {typeof pdf === 'string' ? pdf.split('/').pop() : (pdf.name || 'Doc')}
                 </span>
                 <button onClick={() => removeFile(menuId, sub.id, 'pdfs', i)} className="text-red-500 hover:text-red-700 transition">
                   <Trash2 size={12}/>
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Videos Column */}
+        <div className="space-y-2">
+          <label className="font-bold text-slate-400 block text-[10px] uppercase tracking-widest">{isHe ? 'סרטונים' : 'Videos'}</label>
+          <input type="file" multiple accept="video/*" onChange={(e) => handleFileUpload(e, menuId, sub.id, 'videos')} className="text-[10px] w-full" />
+          <div className="flex gap-2 flex-wrap mt-2">
+            {sub.videos?.map((vid, i) => (
+              <div key={i} className="relative w-12 h-12 group bg-black rounded border overflow-hidden shadow-sm">
+                <video src={vid} className="w-full h-full object-cover" muted onMouseOver={e => e.target.play()} onMouseOut={e => e.target.pause()} />
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-50">
+                  <Video size={14} className="text-white" />
+                </div>
+                <button
+                  onClick={() => removeFile(menuId, sub.id, 'videos', i)}
+                  className="absolute top-0 right-0 bg-red-500 text-white p-0.5 opacity-0 group-hover:opacity-100 transition z-10"
+                >
+                  <Trash2 size={10}/>
                 </button>
               </div>
             ))}
